@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSPzone Quotation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset & Typography */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 14px;
+            /* Base font size for A4 readability */
+            line-height: 1.5;
+        }
+
+        /* A4 Page Setup */
+        /* A4 Page Setup */
+        @page {
+            size: A4 portrait;
+            /* Margin handled by PDF generator (Puppeteer) */
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm 20mm;
+            /* Screen view padding */
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+            /* Ensure no overflow for print */
+        }
+
+        @media print {
+            body {
+                background: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+
+            .page {
+                margin: 0;
+                padding: 0;
+                /* Remove internal padding for print, let Puppeteer handle margins */
+                box-shadow: none;
+                width: 100%;
+                height: auto;
+                page-break-after: always;
+            }
+        }
+
+        /* Header Section Redesign */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .header-left {
+            width: 33.33%;
+            text-align: left;
+        }
+
+        .header-center {
+            width: 33.33%;
+            text-align: center;
+            padding-top: 10px;
+            /* Align visually with content */
+        }
+
+        .header-right {
+            width: 33.33%;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .logo-container {
+            max-width: 200px;
+        }
+
+        /* Placeholder for logo styling - user should replace src */
+        .logo-img {
+            max-height: 60px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-details {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .company-name {
+            color: #111827;
+            font-size: 11px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .contact-info {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .logo-details a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .document-title {
+            font-size: 15px;
+            /* User requested small font ~15 */
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .document-id {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Client & Quotation Info Grid */
+        .info-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            gap: 40px;
+        }
+
+        .info-col {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .powered-by-label {
+            font-size: 9px;
+            color: #2563eb;
+            /* Changed to brand blue */
+            display: block;
+            margin-bottom: 10px;
+            /* Increased to create line space */
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .client-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .info-text {
+            color: #374151;
+            font-size: 14px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .info-group {
+            margin-bottom: 16px;
+        }
+
+        .info-group:last-child {
+            margin-bottom: 0px;
+        }
+
+        /* Pricing Table */
+        .table-container {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 12px 16px;
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        /* Column specific widths */
+        th:nth-child(1) {
+            width: 45%;
+        }
+
+        /* Description */
+        th:nth-child(2) {
+            width: 10%;
+            text-align: center;
+        }
+
+        /* Qty */
+        th:nth-child(3) {
+            width: 15%;
+            text-align: right;
+        }
+
+        /* Rate */
+        th:nth-child(4) {
+            width: 10%;
+            text-align: right;
+        }
+
+        /* VAT */
+        th:nth-child(5) {
+            width: 20%;
+            text-align: right;
+        }
+
+        /* Amount */
+
+        td:nth-child(2) {
+            text-align: center;
+        }
+
+        td:nth-child(3) {
+            text-align: right;
+        }
+
+        td:nth-child(4) {
+            text-align: right;
+        }
+
+        td:nth-child(5) {
+            text-align: right;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+            padding-right: 16px;
+        }
+
+        .totals-table {
+            width: 300px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 8px 0;
+            border-bottom: none;
+            text-align: right;
+        }
+
+        .totals-label {
+            color: #6b7280;
+            font-weight: 500;
+            padding-right: 20px;
+        }
+
+        .totals-value {
+            color: #111827;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .grand-total-row td {
+            padding-top: 12px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 16px;
+            color: #2563eb;
+            /* Primary Brand Color */
+        }
+
+        .grand-total-row .totals-label {
+            color: #111827;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 30px;
+        }
+
+        .content-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2563eb;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .content-body p {
+            margin-bottom: 8px;
+            color: #4b5563;
+            text-align: justify;
+        }
+
+        .content-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 8px;
+        }
+
+        .content-body li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 6px;
+            color: #4b5563;
+        }
+
+        .content-body li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #2563eb;
+            /* Bullet color */
+            font-weight: bold;
+        }
+
+        /* Remarks Section */
+        .remarks-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-left: 4px solid #2563eb;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .remarks-section:empty {
+            display: none;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #2563eb;
+            /* Changed to brand blue */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-inside: avoid;
+        }
+
+        .signature-area {
+            margin-top: 20px;
+        }
+
+        .sign-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 50px;
+            /* Space for signature */
+        }
+
+        .sign-line {
+            width: 200px;
+            border-top: 1px solid #d1d5db;
+            margin-bottom: 8px;
+        }
+
+        .sign-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Utilities */
+        .text-blue {
+            color: #2563eb;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        .terms-text {
+            font-size: 11px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <div class="logo-details">
+                    <span class="powered-by-label">Powered by</span>
+                    <span class="company-name">RAS CORPORATE ADVISORS L.L.C</span>
+                    <div class="contact-info">
+                        ETA Star Al Manara Tower,<br>
+                        #812, Businessbay, Dubai 001<br>
+                        Phone: +971 4589 6885<br>
+                        Email: <a href="mailto:info@cspzone.com">info@cspzone.com</a><br>
+                        <a href="https://www.cspzone.com" target="_blank">www.cspzone.com</a><br>
+                        TRN: 105251791700003
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="document-title">Quotation</div>
+                <div class="document-id">#{{QUOTATION_NO}}</div>
+            </div>
+
+            <div class="header-right">
+                <div class="logo-container">
+                    <!-- Dynamic logo injection -->
+                    <img src="{{LOGO_IMAGE}}" alt="CSPzone" class="logo-img">
+                </div>
+            </div>
+        </header>
+
+        <!-- Information Grid -->
+        <div class="info-grid">
+            <div class="info-col">
+                <div class="info-group">
+                    <div class="info-label">Issued To</div>
+                    <div class="client-name">{{CLIENT_NAME}}</div>
+                    <span class="info-text">{{CLIENT_PHONE}}</span>
+                    <span class="info-text">{{CLIENT_EMAIL}}</span>
+                </div>
+            </div>
+            <div class="info-col" style="text-align: right;">
+                <div class="info-group">
+                    <div class="info-label">Date</div>
+                    <div class="info-text font-medium">{{QUOTATION_DATE}}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Valid Until</div>
+                    <div class="info-text font-medium">{{VALID_TILL_DATE}}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Jurisdiction</div>
+                    <div class="info-text">{{JURISDICTION}}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Business Activity</div>
+                    <div class="info-text">{{BUSINESS_ACTIVITY}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th>Quantity</th>
+                        <th>Rate (AED)</th>
+                        <th>VAT</th>
+                        <th>Amount (AED)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- OpenClaw will inject rows here. Ensure the rows are formatted as <tr><td>...</td></tr> -->
+                    {{ITEMS_TABLE}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td class="totals-label">Sub Total</td>
+                    <td class="totals-value">{{SUB_TOTAL}}</td>
+                </tr>
+                <tr>
+                    <td class="totals-label">VAT (5%)</td>
+                    <td class="totals-value">{{VAT_TOTAL}}</td>
+                </tr>
+                <tr class="grand-total-row">
+                    <td class="totals-label">Grand Total</td>
+                    <td class="totals-value">{{GRAND_TOTAL}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Optional Remarks Section (Moved here as requested) -->
+        <div class="remarks-section">{{REMARKS}}</div>
+
+        <!-- Dynamic Content Sections -->
+
+        <!-- Scope of Services -->
+        <div class="content-section">
+            <h3 class="content-title">Scope of Services</h3>
+            <div class="content-body">{{SCOPE_OF_SERVICES}}</div>
+        </div>
+
+        <!-- Required Documents -->
+        <div class="content-section">
+            <h3 class="content-title">Required Documents</h3>
+            <div class="content-body">{{REQUIRED_DOCUMENTS}}</div>
+        </div>
+
+        <!-- Service Process -->
+        <div class="content-section">
+            <h3 class="content-title">Service Process</h3>
+            <div class="content-body">{{SERVICE_PROCESS}}</div>
+        </div>
+
+        <!-- Estimated Timeline -->
+        <div class="content-section">
+            <h3 class="content-title">Estimated Timeline</h3>
+            <div class="content-body">{{ESTIMATED_TIMELINE}}</div>
+        </div>
+
+        <!-- Payment Terms (Dynamic Section) -->
+        <div class="content-section">
+            <h3 class="content-title">Payment Terms</h3>
+            <div class="content-body">{{PAYMENT_TERMS}}</div>
+        </div>
+
+        <!-- Exclusions -->
+        <div class="content-section">
+            <h3 class="content-title">Exclusions</h3>
+            <div class="content-body">{{EXCLUSIONS}}</div>
+        </div>
+
+        <!-- Acceptance Clause -->
+        <div class="content-section">
+            <h3 class="content-title">Acceptance Clause</h3>
+            <div class="content-body">{{ACCEPTANCE_CLAUSE}}</div>
+        </div>
+
+        <!-- Terms & Conditions (Static) -->
+        <div class="content-section">
+            <h3 class="content-title">Terms & Conditions</h3>
+            <div class="content-body terms-text">
+                <p>RAS Corporate Advisors L.L.C provides corporate solutions including business setup, visa
+                    facilitation, document coordination, compliance advisory and corporate services. Any services
+                    outside the agreed scope require separate written agreement and may incur additional charges.</p>
+
+                <p><span class="text-bold">Payment Terms</span><br>
+                    • Full payment is required in advance unless otherwise agreed in writing.<br>
+                    • Payments are non-refundable under any circumstances once the process has been initiated.<br>
+                    • All payments must be made in UAE Dirhams unless otherwise stated, with any applicable taxes borne
+                    by the Client.</p>
+
+                <p><span class="text-bold">Client Responsibilities</span><br>
+                    The Client is responsible for providing accurate, complete, and truthful information and ensuring
+                    timely submission of required documents. Delays resulting from incomplete documentation or client
+                    inaction are not the responsibility of RAS Corporate Advisors L.L.C.</p>
+
+                <p><span class="text-bold">Service Timelines</span><br>
+                    All timelines are estimates and may be affected by delays from government authorities, Freezone
+                    authorities, banks, or other third parties.</p>
+
+                <p><span class="text-bold">No Guarantee of Results</span><br>
+                    Approval of applications submitted to Freezone authorities, banks, or other external entities is
+                    subject to their internal review and cannot be guaranteed.</p>
+
+                <p><span class="text-bold">Confidentiality</span><br>
+                    RAS Corporate Advisors L.L.C treats all client information as confidential and will disclose it only
+                    when required by law or authorized by the Client.</p>
+
+                <p><span class="text-bold">Limitation of Liability</span><br>
+                    RAS Corporate Advisors L.L.C is not liable for delays, third-party actions, regulatory changes, or
+                    errors caused by inaccurate client information. Liability is limited to the amount paid for the
+                    specific service.</p>
+
+                <p><span class="text-bold">Governing Law</span><br>
+                    These terms are governed by the laws of the United Arab Emirates. Any disputes shall be resolved
+                    exclusively in UAE courts.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="signature-area">
+                <div class="sign-title">CSPzone</div>
+                <div class="sign-line"></div>
+                <div class="sign-label">Authorized Signatory</div>
+            </div>
+            <div class="footer-branding"></div>
+        </footer>
+    </div>
+</body>
+
+</html>
