@@ -133,10 +133,10 @@ async function generatePDF(data) {
         format: 'A4',
         printBackground: true,
         margin: {
-            top: '10mm',
-            right: '10mm',
-            bottom: '10mm',
-            left: '10mm'
+            top: '16mm',
+            right: '16mm',
+            bottom: '16mm',
+            left: '16mm'
         }
     });
     
