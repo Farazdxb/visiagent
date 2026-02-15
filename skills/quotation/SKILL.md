@@ -92,8 +92,42 @@ Calculate:
 
 Generate PDF and return path.
 
+## Running the Generator
+
+### Command
+```bash
+NODE_PATH=/usr/lib/node_modules node /root/.openclaw/workspace/skills/quotation/generate-quotation.js '<json-data>'
+```
+
+### Input JSON Format
+```json
+{
+  "LOGO_IMAGE": "data:image/png;base64,...",
+  "QUOTATION_NO": "Q-2026-0001",
+  "CLIENT_NAME": "ABC Company LLC",
+  "CLIENT_PHONE": "+971 50 123 4567",
+  "CLIENT_EMAIL": "info@abc.com",
+  "QUOTATION_DATE": "15-02-2026",
+  "VALID_TILL_DATE": "15-03-2026",
+  "JURISDICTION": "Dubai, UAE",
+  "BUSINESS_ACTIVITY": "Business Setup Services",
+  "ITEMS_TABLE": "<tr><td>Service</td><td>1</td><td>1000</td><td>5%</td><td>1050</td></tr>",
+  "SUB_TOTAL": "1,000.00",
+  "VAT_TOTAL": "50.00",
+  "GRAND_TOTAL": "1,050.00",
+  "REMARKS": "",
+  "SCOPE_OF_SERVICES": "<ul><li>Item 1</li></ul>",
+  "REQUIRED_DOCUMENTS": "<ul><li>Doc 1</li></ul>",
+  "SERVICE_PROCESS": "<ol><li>Step 1</li></ol>",
+  "ESTIMATED_TIMELINE": "<p>7 days</p>",
+  "PAYMENT_TERMS": "<p>100% advance</p>",
+  "EXCLUSIONS": "<ul><li>Item</li></ul>",
+  "ACCEPTANCE_CLAUSE": "<p>Clause text</p>"
+}
+```
+
 ## Output
 
-PDF file saved to: `/root/.openclaw/workspace/quotations/<filename>.pdf`
+PDF file saved to: `/root/.openclaw/workspace/quotations/quotation_<NO>_<timestamp>.pdf`
 
 Return the file path to the user.
