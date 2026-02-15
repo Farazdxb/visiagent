@@ -106,10 +106,10 @@ async function generatePDF(data) {
     // Read template
     let html = fs.readFileSync(TEMPLATE_PATH, 'utf8');
     
-    // Replace all fields
+    // Replace all fields - use default value if not provided in input data
     for (const [key, value] of Object.entries(fields)) {
         const placeholder = `{{${key}}}`;
-        const replacement = data[key] || '';
+        const replacement = (data[key] !== undefined && data[key] !== '') ? data[key] : value;
         html = html.split(placeholder).join(replacement);
     }
     
