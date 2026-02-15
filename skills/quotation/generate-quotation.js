@@ -12,10 +12,18 @@ if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
+// Logo - read from file if path provided, otherwise use base64 string
+let LOGO_BASE64 = '';
+const logoPath = '/root/.openclaw/workspace/skills/quotation/csp_logo.png';
+if (fs.existsSync(logoPath)) {
+    LOGO_BASE64 = fs.readFileSync(logoPath, 'base64');
+    LOGO_BASE64 = 'data:image/png;base64,' + LOGO_BASE64;
+}
+
 // All 21 fields
 const fields = {
     // Header
-    LOGO_IMAGE: '',           // Base64 string
+    LOGO_IMAGE: LOGO_BASE64,        // Base64 encoded image or file path
     QUOTATION_NO: '',         // e.g., "Q-2026-0001"
     
     // Client Info
