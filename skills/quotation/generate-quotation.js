@@ -150,6 +150,49 @@ async function generatePDF(data) {
     
     await browser.close();
     
+    // Save to database
+    const dbPath = '/root/.openclaw/workspace/skills/db.js';
+    if (fs.existsSync(dbPath)) {
+        try {
+            const { execSync } = require('child_process');
+            const dbJs = dbPath;
+            
+            // Find or create client
+            const clientResult = JSON.parse(execSync(`NODE_PATH=$(npm root -g) node ${dbJs} find-or-create-client '${JSON.stringify({
+                name: data.CLIENT_NAME,
+                email: data.CLIENT_EMAIL,
+                phone: data.CLIENT_PHONE,
+                jurisdiction: data.JURISDICTION,
+                business_activity: data.BUSINESS_ACTIVITY
+            })}'`, { encoding: 'utf8' }));
+            
+            // Parse items from ITEMS_TABLE HTML or use provided items
+            let items = [];
+            if (data.ITEMS_ARRAY && data.ITEMS_ARRAY.length > 0) {
+                items = data.ITEMS_ARRAY;
+            }
+            
+            // Save quotation
+            const quotationResult = JSON.parse(execSync(`NODE_PATH=$(npm root -g) node ${dbJs} save-quotation ${clientResult.id} '${JSON.stringify({
+                quotation_no: data.QUOTATION_NO,
+                date: data.QUOTATION_DATE,
+                valid_till: data.VALID_TILL_DATE,
+                jurisdiction: data.JURISDICTION,
+                business_activity: data.BUSINESS_ACTIVITY,
+                sub_total: parseFloat(data.SUB_TOTAL.replace(/,/g, '')) || 0,
+                vat_total: parseFloat(data.VAT_TOTAL.replace(/,/g, '')) || 0,
+                grand_total: parseFloat(data.GRAND_TOTAL.replace(/,/g, '')) || 0,
+                status: 'pending',
+                remarks: data.REMARKS,
+                pdf_path: outputPath
+            })}' '${JSON.stringify(items)}'`, { encoding: 'utf8' }));
+            
+            console.log(`DB: Client ${clientResult.action} (ID: ${clientResult.id}), Quotation saved (ID: ${quotationResult.id})`);
+        } catch (e) {
+            console.error('DB save error:', e.message);
+        }
+    }
+    
     // Output the file path
     console.log(outputPath);
 }
