@@ -85,10 +85,11 @@ Items:
 Scope: <ul><li>Trade license application</li><li>Initial approval</li></ul>
 ```
 
-Calculate:
-- Sub Total: 6500
-- VAT (5%): 325
-- Grand Total: 6825
+**Items:**
+- Trade License Setup - 5000 AED (no VAT)
+- Visa Processing - 1500 AED + 5% VAT = 1575 AED
+
+Note: Do NOT auto-calculate VAT on items. Only add VAT amounts as explicitly specified by the user. The user provides the final amounts (including or excluding VAT as they wish).
 
 Generate PDF and return path.
 
@@ -111,10 +112,10 @@ NODE_PATH=/usr/lib/node_modules node /root/.openclaw/workspace/skills/quotation/
   "VALID_TILL_DATE": "15-03-2026",
   "JURISDICTION": "Dubai, UAE",
   "BUSINESS_ACTIVITY": "Business Setup Services",
-  "ITEMS_TABLE": "<tr><td>Service</td><td>1</td><td>1000</td><td>5%</td><td>1050</td></tr>",
-  "SUB_TOTAL": "1,000.00",
+  "ITEMS_TABLE": "<tr><td>Service (no VAT)</td><td>1</td><td>1000</td><td>-</td><td>1000</td></tr><tr><td>Service (with VAT)</td><td>1</td><td>1000</td><td>5%</td><td>1050</td></tr>",
+  "SUB_TOTAL": "2,050.00",
   "VAT_TOTAL": "50.00",
-  "GRAND_TOTAL": "1,050.00",
+  "GRAND_TOTAL": "2,100.00",
   "REMARKS": "",
   "SCOPE_OF_SERVICES": "<ul><li>Item 1</li></ul>",
   "REQUIRED_DOCUMENTS": "<ul><li>Doc 1</li></ul>",
