@@ -20,6 +20,17 @@ if (fs.existsSync(logoPath)) {
     LOGO_BASE64 = 'data:image/png;base64,' + LOGO_BASE64;
 }
 
+// Load services config if available
+let servicesConfig = null;
+const servicesPath = '/root/.openclaw/workspace/skills/quotation/services.js';
+if (fs.existsSync(servicesPath)) {
+    try {
+        servicesConfig = require(servicesPath);
+    } catch (e) {
+        console.error('Warning: Could not load services config:', e.message);
+    }
+}
+
 // All 21 fields
 const fields = {
     // Header
@@ -101,6 +112,23 @@ async function generatePDF(data) {
     if (missing.length > 0) {
         console.error('Missing required fields:', missing.join(', '));
         process.exit(1);
+    }
+    
+    // Auto-fill content from service config if service_type provided
+    if (data.service_type && servicesConfig) {
+        const serviceData = servicesConfig.formatAsHtml(servicesConfig.getService(data.service_type));
+        if (serviceData) {
+            // Only use service content if fields are not already provided
+            if (!data.REMARKS || data.REMARKS === '') data.REMARKS = serviceData.remarks;
+            if (!data.SCOPE_OF_SERVICES || data.SCOPE_OF_SERVICES === '') data.SCOPE_OF_SERVICES = serviceData.scope;
+            if (!data.REQUIRED_DOCUMENTS || data.REQUIRED_DOCUMENTS === '') data.REQUIRED_DOCUMENTS = serviceData.documents;
+            if (!data.SERVICE_PROCESS || data.SERVICE_PROCESS === '') data.SERVICE_PROCESS = serviceData.process;
+            if (!data.ESTIMATED_TIMELINE || data.ESTIMATED_TIMELINE === '') data.ESTIMATED_TIMELINE = serviceData.timeline;
+            if (!data.PAYMENT_TERMS || data.PAYMENT_TERMS === '') data.PAYMENT_TERMS = serviceData.payment;
+            if (!data.EXCLUSIONS || data.EXCLUSIONS === '') data.EXCLUSIONS = serviceData.exclusions;
+            if (!data.ACCEPTANCE_CLAUSE || data.ACCEPTANCE_CLAUSE === '') data.ACCEPTANCE_CLAUSE = serviceData.acceptance_clause;
+            console.log(`Using service content: ${data.service_type}`);
+        }
     }
     
     // Read template
