@@ -162,6 +162,16 @@ function getAllServices() {
 }
 
 function formatAsHtml(service) {
+    // Format remarks as bullet points - split by period
+    let remarksHtml = '<ul>';
+    service.remarks.split('.').forEach(remark => {
+        const trimmed = remark.trim();
+        if (trimmed && trimmed.length > 5) { // Skip empty or too short
+            remarksHtml += `<li>${trimmed}.</li>`;
+        }
+    });
+    remarksHtml += '</ul>';
+    
     // Format scope
     let scopeHtml = `<p>${service.scope}</p>`;
     
@@ -187,7 +197,7 @@ function formatAsHtml(service) {
     exclusionsHtml += '</ul>';
     
     return {
-        remarks: service.remarks,
+        remarks: remarksHtml,
         scope: scopeHtml,
         documents: docsHtml,
         process: processHtml,
