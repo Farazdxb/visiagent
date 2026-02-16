@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSPzone Invoice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset & Typography */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 14px;
+            /* Base font size for A4 readability */
+            line-height: 1.5;
+        }
+
+        /* A4 Page Setup */
+        @page {
+            size: A4 portrait;
+            /* Margin handled by PDF generator (Puppeteer) */
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm 20mm;
+            /* Screen view padding */
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+            /* Ensure no overflow for print */
+        }
+
+        @media print {
+            body {
+                background: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+
+            .page {
+                margin: 0;
+                padding: 0;
+                /* Remove internal padding for print, let Puppeteer handle margins */
+                box-shadow: none;
+                width: 100%;
+                height: auto;
+                page-break-after: always;
+            }
+        }
+
+        /* Header Section Redesign */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .header-left {
+            width: 33.33%;
+            text-align: left;
+        }
+
+        .header-center {
+            width: 33.33%;
+            text-align: center;
+            padding-top: 10px;
+            /* Align visually with content */
+        }
+
+        .header-right {
+            width: 33.33%;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .logo-container {
+            max-width: 200px;
+        }
+
+        /* Placeholder for logo styling - user should replace src */
+        .logo-img {
+            max-height: 60px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-details {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .company-name {
+            color: #111827;
+            font-size: 11px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .contact-info {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .logo-details a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .document-title {
+            font-size: 15px;
+            /* User requested small font ~15 */
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .document-id {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Client & Quotation Info Grid */
+        .info-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 40px;
+        }
+
+        .info-col {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .powered-by-label {
+            font-size: 9px;
+            color: #2563eb;
+            /* Changed to brand blue */
+            display: block;
+            margin-bottom: 10px;
+            /* Increased to create line space */
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .client-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .info-text {
+            color: #374151;
+            font-size: 11px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .info-group {
+            margin-bottom: 10px;
+        }
+
+        .info-group:last-child {
+            margin-bottom: 0px;
+        }
+
+        /* Pricing Table */
+        .table-container {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 12px 16px;
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 8px 12px;
+            /* Reduced padding for compactness */
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            font-size: 10.5px;
+            line-height: 1.3;
+            vertical-align: middle;
+        }
+
+        /* Column specific widths */
+        th:nth-child(1) {
+            width: 45%;
+        }
+
+        /* Description */
+        th:nth-child(2) {
+            width: 10%;
+            text-align: center;
+        }
+
+        /* Qty */
+        th:nth-child(3) {
+            width: 15%;
+            text-align: right;
+        }
+
+        /* Rate */
+        th:nth-child(4) {
+            width: 10%;
+            text-align: right;
+        }
+
+        /* VAT */
+        th:nth-child(5) {
+            width: 20%;
+            text-align: right;
+        }
+
+        /* Amount */
+
+        td:nth-child(2) {
+            text-align: center;
+        }
+
+        td:nth-child(3) {
+            text-align: right;
+        }
+
+        td:nth-child(4) {
+            text-align: right;
+        }
+
+        td:nth-child(5) {
+            text-align: right;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            /* Reduced margin to separate from total in words */
+            padding-right: 16px;
+        }
+
+        .totals-table {
+            width: 300px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 8px 0;
+            border-bottom: none;
+            text-align: right;
+        }
+
+        .totals-label {
+            color: #6b7280;
+            font-weight: 500;
+            padding-right: 20px;
+        }
+
+        .totals-value {
+            color: #111827;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .grand-total-row td {
+            padding-top: 12px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 16px;
+            color: #2563eb;
+            /* Primary Brand Color */
+        }
+
+        .grand-total-row .totals-label {
+            color: #111827;
+        }
+
+        /* Total In Words */
+        .total-words-section {
+            display: block;
+            text-align: right;
+            /* Changed to right align */
+            margin-bottom: 40px;
+            padding-right: 16px;
+            font-size: 12px;
+        }
+
+        /* Content Sections (Payment Terms, Bank Details) */
+        .content-section {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .content-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+            border-bottom: 2px solid #2563eb;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .content-body {
+            font-size: 10px;
+            line-height: 1.4;
+            color: #4b5563;
+        }
+
+        .content-body p {
+            margin-bottom: 6px;
+            color: #4b5563;
+            text-align: justify;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .content-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 6px;
+        }
+
+        .content-body li {
+            position: relative;
+            padding-left: 14px;
+            /* Reduced from 18px */
+            margin-bottom: 4px;
+            /* Reduced from 6px */
+            color: #4b5563;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .content-body li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #2563eb;
+            /* Bullet color */
+            font-weight: bold;
+        }
+
+        /* Remarks Section */
+        .remarks-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-left: 4px solid #2563eb;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        /* Bank Details & QR Wrapper */
+        .bank-qr-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+
+        /* Bank Details Box */
+        .bank-details-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 12px;
+            flex: 1;
+            /* Takes remaining space */
+        }
+
+        .bank-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+            display: block;
+        }
+
+        .bank-info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 15px;
+            font-size: 10px;
+            align-items: center;
+        }
+
+        /* QR Code Box */
+        .qr-code-box {
+            flex: 0 0 auto;
+            width: 140px;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bank-label {
+            color: #6b7280;
+            font-weight: 500;
+            min-width: 90px;
+        }
+
+        .bank-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .qr-img {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #e5e7eb;
+            padding: 4px;
+            background: white;
+            object-fit: contain;
+        }
+
+        .qr-label {
+            margin-top: 6px;
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.2;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #2563eb;
+            /* Changed to brand blue */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-inside: avoid;
+        }
+
+        .signature-area {
+            margin-top: 20px;
+        }
+
+        .sign-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 50px;
+            /* Space for signature */
+        }
+
+        .sign-line {
+            width: 200px;
+            border-top: 1px solid #d1d5db;
+            margin-bottom: 8px;
+        }
+
+        .sign-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Utilities */
+        .text-blue {
+            color: #2563eb;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        .terms-text {
+            font-size: 9px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <div class="logo-details">
+                    <span class="powered-by-label">Powered by</span>
+                    <span class="company-name">RAS CORPORATE ADVISORS L.L.C</span>
+                    <div class="contact-info">
+                        ETA Star Al Manara Tower,<br>
+                        #812, Businessbay, Dubai 001<br>
+                        Phone: +971 4589 6885<br>
+                        Email: <a href="mailto:info@cspzone.com">info@cspzone.com</a><br>
+                        <a href="https://www.cspzone.com" target="_blank">www.cspzone.com</a><br>
+                        TRN: 105251791700003
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="document-title">TAX INVOICE</div>
+                <div class="document-id">#{{INVOICE_NO}}</div>
+            </div>
+
+            <div class="header-right">
+                <div class="logo-container">
+                    <!-- Dynamic logo injection -->
+                    <img src="{{LOGO_IMAGE}}" alt="CSPzone" class="logo-img">
+                </div>
+            </div>
+        </header>
+
+        <!-- Information Grid -->
+        <div class="info-grid">
+            <div class="info-col">
+                <div class="info-group">
+                    <div class="info-label">Bill To</div>
+                    <div class="client-name">{{CLIENT_NAME}}</div>
+                    <span class="info-text">{{CLIENT_PHONE}}</span>
+                    <span class="info-text">{{CLIENT_EMAIL}}</span>
+                </div>
+            </div>
+            <div class="info-col" style="text-align: right;">
+                <div class="info-group">
+                    <div class="info-label">Invoice Date</div>
+                    <div class="info-text font-medium">{{INVOICE_DATE}}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Due Date</div>
+                    <div class="info-text font-medium">{{DUE_DATE}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th>Quantity</th>
+                        <th>Rate (AED)</th>
+                        <th>VAT</th>
+                        <th>Amount (AED)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- OpenClaw will inject rows here. Ensure the rows are formatted as <tr><td>...</td></tr> -->
+                    {{ITEMS_TABLE}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td class="totals-label">Sub Total</td>
+                    <td class="totals-value">{{SUB_TOTAL}}</td>
+                </tr>
+                <tr>
+                    <td class="totals-label">Total VAT</td>
+                    <td class="totals-value">{{VAT_TOTAL}}</td>
+                </tr>
+                <tr class="grand-total-row">
+                    <td class="totals-label">Grand Total</td>
+                    <td class="totals-value">{{GRAND_TOTAL}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Total In Words -->
+        <div class="total-words-section">
+            Amount in words: {{TOTAL_IN_WORDS}}
+        </div>
+
+        <!-- Payment Terms -->
+        <div class="content-section">
+            <h3 class="content-title">Payment Terms</h3>
+            <div class="content-body">
+                <ul>
+                    <li>This invoice is raised against Quotation No. {{QUOTATION_REF}}. All services, scope, terms, and
+                        conditions shall be governed as per the accepted quotation. Payment of this invoice confirms
+                        acceptance of the same.</li>
+                    <li>All payments must be made in full and upfront prior to the provision of services.</li>
+                    <li>The sender is responsible for all bank fees and charges associated with the transaction.</li>
+                    <li>If payment is made by card, bank charges of 2.8% will be additionally deducted. Alternatively,
+                        you may transfer the amount directly to our account and share the proof of payment.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Bank Account Details & QR Split -->
+        <div class="content-section">
+            <h3 class="content-title">Bank Account Details</h3>
+            <div class="bank-qr-wrapper">
+                <!-- Left: Bank Details Box (Gray) -->
+                <div class="bank-details-box">
+                    <div class="bank-title">Abu Dhabi Commercial Bank (ADCB)</div>
+                    <div class="bank-info-grid">
+                        <span class="bank-label">Account Title:</span>
+                        <span class="bank-value">RAS Corporate Advisors LLC</span>
+
+                        <span class="bank-label">Account No.:</span>
+                        <span class="bank-value">11923753820001</span>
+
+                        <span class="bank-label">IBAN:</span>
+                        <span class="bank-value">AE72 0030 0119 2375 3820 001</span>
+
+                        <span class="bank-label">SWIFT:</span>
+                        <span class="bank-value">ADCBAEAA</span>
+
+                        <span class="bank-label">Branch:</span>
+                        <span class="bank-value">ADCB – Business Bay</span>
+
+                        <span class="bank-label">Currency:</span>
+                        <span class="bank-value">AED</span>
+                    </div>
+                </div>
+
+                <!-- Right: QR Code Box (White) -->
+                <div class="qr-code-box">
+                    <img src="{{QR_CODE_IMAGE}}" alt="Scan for E-Invoice" class="qr-img">
+                    <div class="qr-label">Scan to verify e-invoice details</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="signature-area" style="text-align: center; width: 100%;">
+                <div class="sign-label" style="font-style: italic;">This is a computer generated invoice. No signature
+                    is required.</div>
+            </div>
+            <div class="footer-branding"></div>
+        </footer>
+    </div>
+</body>
+
+</html>
