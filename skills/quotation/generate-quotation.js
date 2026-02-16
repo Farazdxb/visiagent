@@ -198,6 +198,23 @@ async function generatePDF(data) {
             let items = [];
             if (data.ITEMS_ARRAY && data.ITEMS_ARRAY.length > 0) {
                 items = data.ITEMS_ARRAY;
+            } else if (data.ITEMS_TABLE) {
+                // Parse items from HTML table
+                const trMatches = data.ITEMS_TABLE.match(/<tr[^>]*>(.*?)<\/tr>/g);
+                if (trMatches) {
+                    trMatches.forEach(tr => {
+                        const tdMatches = tr.match(/<td[^>]*>(.*?)<\/td>/g);
+                        if (tdMatches && tdMatches.length >= 5) {
+                            const description = tdMatches[0].replace(/<[^>]+>/g, '').trim();
+                            const quantity = parseInt(tdMatches[1].replace(/<[^>]+>/g, '').trim()) || 1;
+                            const rate = parseFloat(tdMatches[2].replace(/<[^>]+>/g, '').replace(/,/g, '').trim()) || 0;
+                            const vatMatch = tdMatches[3].match(/(\d+)/);
+                            const vat_percent = vatMatch ? parseFloat(vatMatch[1]) : 0;
+                            const amount = parseFloat(tdMatches[4].replace(/<[^>]+>/g, '').replace(/,/g, '').trim()) || 0;
+                            items.push({ description, quantity, rate, vat_percent, amount });
+                        }
+                    });
+                }
             }
             
             // Save quotation

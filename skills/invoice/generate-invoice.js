@@ -207,11 +207,12 @@ async function generateInvoice() {
         path: outputPath,
         format: 'A4',
         printBackground: true,
+        preferCSSPageSize: false,
         margin: {
-            top: '0mm',
-            right: '0mm',
-            bottom: '0mm',
-            left: '0mm'
+            top: '10mm',
+            right: '10mm',
+            bottom: '10mm',
+            left: '10mm'
         }
     });
     
