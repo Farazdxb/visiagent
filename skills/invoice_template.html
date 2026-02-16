@@ -47,22 +47,26 @@
         }
 
         @media print {
+
+            html,
             body {
-                background: none;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                margin: 0;
-                padding: 0;
+                height: auto !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
             }
 
             .page {
-                margin: 0;
-                padding: 0;
+                margin: 0 !important;
+                padding: 0 !important;
                 /* Remove internal padding for print, let Puppeteer handle margins */
-                box-shadow: none;
-                width: 100%;
-                height: auto;
-                page-break-after: always;
+                box-shadow: none !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                border: none !important;
+                page-break-after: auto !important;
             }
         }
 

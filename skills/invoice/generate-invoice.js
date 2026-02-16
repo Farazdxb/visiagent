@@ -207,7 +207,7 @@ async function generateInvoice() {
         path: outputPath,
         format: 'A4',
         printBackground: true,
-        preferCSSPageSize: false,
+        preferCSSPageSize: true,
         margin: {
             top: '10mm',
             right: '10mm',
