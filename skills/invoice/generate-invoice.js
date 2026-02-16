@@ -1,5 +1,36 @@
 #!/usr/bin/env node
 
+// Add NODE_PATH for modules
+process.env.NODE_PATH = '/usr/lib/node_modules';
+require('module').Module._initPaths();
+
+// CLI args - check for status command FIRST
+const args = process.argv.slice(2);
+
+if (args[0] === '--status') {
+    const invoiceNo = args[1];
+    const newStatus = args[2];
+    
+    if (!invoiceNo || !newStatus) {
+        console.error('Usage: node generate-invoice.js --status <invoice-no> <paid|unpaid>');
+        process.exit(1);
+    }
+    
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('/root/.openclaw/workspace/data/cspzone.db');
+    
+    db.run('UPDATE invoices SET status = ? WHERE invoice_no = ?', [newStatus, invoiceNo], function(err) {
+        if (err) {
+            console.error('Error:', err.message);
+            process.exit(1);
+        }
+        console.log(`Invoice ${invoiceNo} marked as ${newStatus}`);
+        db.close();
+    });
+    process.exit(0);
+}
+
+// Continue with normal invoice generation
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
@@ -92,11 +123,14 @@ function saveInvoiceToDb(db, clientId, quotationId, invoiceData) {
 }
 
 // CLI args
-const args = process.argv.slice(2);
 if (args.length === 0) {
-    console.error('Usage: node generate-invoice.js <quotation-id> [options]');
-    console.error('Example: node generate-invoice.js 1');
-    console.error('Example: node generate-invoice.js 1 --date 16-02-2026 --due 16-03-2026');
+    console.error('Usage:');
+    console.error('  node generate-invoice.js <quotation-id> [options]');
+    console.error('  node generate-invoice.js --status <invoice-no> <paid|unpaid>');
+    console.error('');
+    console.error('Examples:');
+    console.error('  node generate-invoice.js 1');
+    console.error('  node generate-invoice.js --status INV-2026-0001 paid');
     process.exit(1);
 }
 
@@ -156,7 +190,7 @@ async function generateInvoice() {
     const grandTotal = parseFloat(quotation.grand_total).toFixed(2);
     const totalInWords = numberToWords(parseFloat(grandTotal));
     
-    // QR Code URL (will be replaced with actual QR image in browser)
+    // QR Code URL
     const qrCodeUrl = `https://cspzone.com/invoice/${invoiceNo}`;
     
     // Read template
