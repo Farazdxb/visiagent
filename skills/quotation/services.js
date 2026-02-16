@@ -172,8 +172,26 @@ function formatAsHtml(service) {
     });
     remarksHtml += '</ul>';
     
-    // Format scope
-    let scopeHtml = `<p>${service.scope}</p>`;
+    // Format scope - check if it has "Package includes" for special formatting (ANCFZ, UAQ, etc)
+    let scopeHtml;
+    if (service.scope.includes('Package includes') || service.scope.includes('What UAQ Packages Include')) {
+        let splitText = '';
+        if (service.scope.includes('Package includes')) {
+            splitText = 'Package includes';
+        } else if (service.scope.includes('What UAQ Packages Include')) {
+            splitText = 'What UAQ Packages Include';
+        }
+        const parts = service.scope.split(splitText);
+        scopeHtml = `<p>${parts[0]}</p><p><strong>Package Includes:</strong></p><ul>`;
+        parts[1].split(';').forEach(item => {
+            if (item.trim()) {
+                scopeHtml += `<li>${item.trim()}</li>`;
+            }
+        });
+        scopeHtml += '</ul>';
+    } else {
+        scopeHtml = `<p>${service.scope}</p>`;
+    }
     
     // Format documents
     let docsHtml = '<ul>';
