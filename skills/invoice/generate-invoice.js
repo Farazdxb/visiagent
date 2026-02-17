@@ -256,7 +256,7 @@ async function generateInvoice() {
     await saveInvoiceToDb(db, quotation.client_id, quotationId, {
         invoice_no: invoiceNo,
         date: invDate,
-        amount: grandTotal,
+        amount: subTotal,
         vat_amount: vatTotal,
         pdf_path: outputPath
     });
