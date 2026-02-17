@@ -111,9 +111,9 @@ function getQuotation(db, quotationId) {
 // Save invoice to database
 function saveInvoiceToDb(db, clientId, quotationId, invoiceData) {
     return new Promise((resolve, reject) => {
-        db.run(`INSERT INTO invoices (client_id, quotation_id, invoice_no, date, amount, status, pdf_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [clientId, quotationId, invoiceData.invoice_no, invoiceData.date, invoiceData.amount, 'unpaid', invoiceData.pdf_path],
+        db.run(`INSERT INTO invoices (client_id, quotation_id, invoice_no, date, amount, vat_amount, status, pdf_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [clientId, quotationId, invoiceData.invoice_no, invoiceData.date, invoiceData.amount, invoiceData.vat_amount || 0, 'unpaid', invoiceData.pdf_path],
             function(err) {
                 if (err) return reject(err);
                 resolve({ id: this.lastID });
@@ -257,6 +257,7 @@ async function generateInvoice() {
         invoice_no: invoiceNo,
         date: invDate,
         amount: grandTotal,
+        vat_amount: vatTotal,
         pdf_path: outputPath
     });
     
